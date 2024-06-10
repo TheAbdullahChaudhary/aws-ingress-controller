@@ -1,0 +1,106 @@
+# apache-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: apache-service
+  namespace: apache-namespace
+spec:
+  selector:
+    app: apache
+    env: aws
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: apache-deployment
+  namespace: apache-namespace
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: apache
+      env: aws
+  template:
+    metadata:
+      labels:
+        app: apache
+        env: aws
+    spec:
+      containers:
+      - name: apache
+        image: theabdullahchaudhary/my-apache-image:latest
+        ports:
+        - containerPort: 80
+        volumeMounts:
+        - mountPath: /usr/local/apache2/htdocs
+          name: html-volume
+      volumes:
+      - name: html-volume
+        configMap:
+          name: apache-config
+          items:
+          - key: index.html
+            path: index.html
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: apache-config
+  namespace: apache-namespace
+data:
+  index.html: |
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Welcome to aws.digitxel.com!</title>
+    </head>
+    <body>
+        <h1>Welcome to aws.digitxel.com!</h1>
+        <p>This is the default page for aws.digitxel.com.</p>
+    </body>
+    </html>
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: apache-service-aws1
+  namespace: apache-namespace
+spec:
+  selector:
+    app: apache
+    env: aws1
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: apache-deployment-aws1
+  namespace: apache-namespace
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: apache
+      env: aws1
+  template:
+    metadata:
+      labels:
+        app: apache
+        env: aws1
+    spec:
+      containers:
+      - name: apache
+        image: theabdullahchaudhary/my-apache-image:latest
+        ports:
+        - containerPort: 80
+---
+
